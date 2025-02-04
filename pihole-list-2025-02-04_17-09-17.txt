@@ -1,4 +1,4 @@
-127.0.0.1 
+# Gerado Pelo Script makeList.sh do repositório - @https://github.com/c3t4r4/Make-List-Pi-Hole
 127.0.0.1 0.code.cotsta.ru
 127.0.0.1 0.fls.doubleclick.net
 127.0.0.1 0.myikas.com
@@ -6530,10 +6530,7 @@
 127.0.0.1 9xxy.icu
 127.0.0.1 9ye1n.voluumtrk.com
 127.0.0.1 9z6k8pt7g6.kameleoon.eu
-127.0.0.1 ::1 localhost
-127.0.0.1 === Conteúdo da URL: https://adaway.org/hosts.txt ===
-127.0.0.1 === Conteúdo da URL: https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt ===
-127.0.0.1 === Conteúdo da URL: https://v.firebog.net/hosts/AdguardDNS.txt ===
+::1 localhost
 127.0.0.1 Checkra1n.cc
 127.0.0.1 Free-4paid.com
 127.0.0.1 Furykms.com

@@ -35,7 +35,7 @@ if [ ! -f "$JSON_FILE" ]; then
 fi
 
 # Nome do arquivo de saída com data e hora
-OUTPUT_FILE="pihole-list-$(date +"%Y-%m-%d_%H:%M:%S").txt"
+OUTPUT_FILE="pihole-list-$(date +"%Y-%m-%d_%H-%M-%S").txt"
 
 # Array para armazenar as URLs incluídas
 urls_to_include=()
@@ -85,7 +85,6 @@ fi
 # Concatenar todos os arquivos
 echo "Concatenando conteúdo..."
 for url in "${urls_to_include[@]}"; do
-    echo -e "\n=== Conteúdo da URL: $url ===\n" >> "$OUTPUT_FILE"
     curl -s "$url" >> "$OUTPUT_FILE"
 done
 
@@ -198,21 +197,25 @@ fi
 # Função para processar cada linha
 process_line() {
     local line="$1"
-    # Pular linhas que começam com # ou vazias
-    [[ $line =~ ^[[:space:]]*# || -z $line ]] && return
-    
-    # Remover espaços em branco
+    # Remover espaços em branco no início e fim
     line=$(echo "$line" | xargs)
+    
+    # Pular linhas vazias, que começam com # ou ::1
+    [[ -z "$line" || $line =~ ^[[:space:]]*# || $line =~ ^[[:space:]]*::1 ]] && return
     
     # Substituir 0.0.0.0 por 127.0.0.1
     line=${line/0.0.0.0/127.0.0.1}
     
     # Se a linha não começa com um IP, adicionar 127.0.0.1
     if ! [[ $line =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-        line="127.0.0.1 $line"
+        # Verificar se a linha não está vazia antes de adicionar o IP
+        if [[ ! -z "$line" ]]; then
+            line="127.0.0.1 $line"
+        fi
     fi
     
-    echo "$line"
+    # Só retorna a linha se ela não estiver vazia
+    [[ ! -z "$line" ]] && echo "$line"
 }
 export -f process_line
 
