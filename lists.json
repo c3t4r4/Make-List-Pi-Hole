@@ -1,0 +1,17 @@
+    [
+        {
+            "name": "adservers.txt",
+            "description": "A reliable host file containing advertising domains, trackers, malwares and other unsafe domains. I collect these domains from my Pi-Hole and I test them for a few days before adding to the list. You can request additional domains or report existing domains via issues tab.",
+            "url": "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
+        },
+        {
+            "name": "adaway.org",
+            "description": "AdAway is an open source ad blocker for Android using the hosts file.",
+            "url": "https://adaway.org/hosts.txt"
+        },
+        {
+            "name": "AdguardDNS",
+            "description": "This is sourced from an \"adblock\" style list which is flat-out NOT designed to work with DNS sinkholes",
+            "url": "https://v.firebog.net/hosts/AdguardDNS.txt"
+        }
+    ]
