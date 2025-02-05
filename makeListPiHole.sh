@@ -13,11 +13,6 @@ create_json_file() {
             "url": "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
         },
         {
-            "name": "adaway.org",
-            "description": "AdAway is an open source ad blocker for Android using the hosts file.",
-            "url": "https://adaway.org/hosts.txt"
-        },
-        {
             "name": "AdguardDNS",
             "description": "This is sourced from an \"adblock\" style list which is flat-out NOT designed to work with DNS sinkholes",
             "url": "https://v.firebog.net/hosts/AdguardDNS.txt"
@@ -35,7 +30,7 @@ if [ ! -f "$JSON_FILE" ]; then
 fi
 
 # Nome do arquivo de saída com data e hora
-OUTPUT_FILE="pihole-list-$(date +"%Y-%m-%d_%H-%M-%S").txt"
+OUTPUT_FILE="pihole-list-$(date +"%Y-%m-%d_%H-%M-%S").temp"
 
 # Array para armazenar as URLs incluídas
 urls_to_include=()
@@ -85,6 +80,7 @@ fi
 # Concatenar todos os arquivos
 echo "Concatenando conteúdo..."
 for url in "${urls_to_include[@]}"; do
+    echo -e "\n=== Conteúdo da URL: $url ===\n"
     curl -s "$url" >> "$OUTPUT_FILE"
 done
 
@@ -196,35 +192,55 @@ fi
 
 # Função para processar cada linha
 process_line() {
-    local line="$1"
-    # Remover espaços em branco no início e fim
-    line=$(echo "$line" | xargs)
+    local line
+    # Ler a linha preservando os caracteres especiais
+    line=$(printf '%s' "$1" | tr -d '\r')
+    
+    # Remover espaços em branco no início e fim sem usar xargs
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
     
     # Pular linhas vazias, que começam com # ou ::1
     [[ -z "$line" || $line =~ ^[[:space:]]*# || $line =~ ^[[:space:]]*::1 ]] && return
     
-    # Substituir 0.0.0.0 por 127.0.0.1
-    line=${line/0.0.0.0/127.0.0.1}
-    
-    # Se a linha não começa com um IP, adicionar 127.0.0.1
+    # Se a linha não começa com um IP, adicionar 0.0.0.0
     if ! [[ $line =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
         # Verificar se a linha não está vazia antes de adicionar o IP
         if [[ ! -z "$line" ]]; then
-            line="127.0.0.1 $line"
+            line="0.0.0.0 $line"
         fi
     fi
     
-    # Só retorna a linha se ela não estiver vazia
-    [[ ! -z "$line" ]] && echo "$line"
+    # Verificar se a linha tem conteúdo após o IP
+    if [[ $line =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+[[:space:]]+[^[:space:]]+ ]]; then
+        printf '%s\n' "$line"
+    fi
 }
 export -f process_line
 
 # Processar cada chunk em paralelo
-find "$temp_dir" -name 'chunk_*' | parallel --bar "cat {} | while IFS= read -r line; do process_line \"\$line\"; done > {}.processed"
+find "$temp_dir" -name 'chunk_*' | \
+    parallel --bar "cat {} | while IFS= read -r line; do process_line \"\$line\"; done > {}.processed"
+
+OUTPUT_FILE_FINAL="pihole-list-c3t4r4.txt"
 
 # Combinar todos os arquivos processados, ordenar e remover duplicatas
-echo "# Gerado Pelo Script makeList.sh do repositório - @https://github.com/c3t4r4/Make-List-Pi-Hole" > "$OUTPUT_FILE"
-echo "" >> "$OUTPUT_FILE"  # Linha em branco após o cabeçalho
-find "$temp_dir" -name '*.processed' -exec cat {} \; | sort -u >> "$OUTPUT_FILE"
+echo "# Gerado Pelo Script makeList.sh do repositório - @https://github.com/c3t4r4/Make-List-Pi-Hole" > "$OUTPUT_FILE_FINAL"
+echo "" >> "$OUTPUT_FILE_FINAL"  # Linha em branco após o cabeçalho
+find "$temp_dir" -name '*.processed' -exec cat {} \; | sort -u >> "$OUTPUT_FILE_FINAL"
 
-echo "Arquivo final gerado com sucesso: $OUTPUT_FILE"
+# Remover o arquivo temporário OUTPUT_FILE de acordo com o SO
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    rm "$OUTPUT_FILE"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux
+    rm "$OUTPUT_FILE"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    # Windows (Git Bash/Cygwin)
+    rm "$OUTPUT_FILE"
+else
+    echo "Sistema operacional não reconhecido. Não foi possível remover o arquivo temporário."
+fi
+
+echo "Arquivo final gerado com sucesso: $OUTPUT_FILE_FINAL"
