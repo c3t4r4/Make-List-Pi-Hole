@@ -1,8 +1,8 @@
 # Gerado Pelo Script makeList.sh do repositório - @https://github.com/c3t4r4/Make-List-Pi-Hole
 
-0.0.0.0 .0.0 vid-f10-us-va.adhigh.net
-0.0.0.0 0 im.5b794700.65a3b51.ads.a4cdn.contentabc.com
-0.0.0.0 0.0 chron.moengage.com
+0.0.0.0 vid-f10-us-va.adhigh.net
+0.0.0.0 im.5b794700.65a3b51.ads.a4cdn.contentabc.com
+0.0.0.0 chron.moengage.com
 0.0.0.0 0.code.cotsta.ru
 0.0.0.0 0.fls.doubleclick.net
 0.0.0.0 0.myikas.com
